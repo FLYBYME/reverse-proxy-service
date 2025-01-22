@@ -1,245 +1,166 @@
 [![Moleculer](https://badgen.net/badge/Powered%20by/Moleculer/0e83cd)](https://moleculer.services)
 
-# Kubernetes Service
+# Routes services
 
-This service provides integration with Kubernetes clusters using the Moleculer framework. It allows you to manage and interact with Kubernetes resources programmatically.
+## Routes Service
 
-## Features
-
-- Load Kubernetes configurations
-- Execute commands in Kubernetes pods
-- Watch Kubernetes resources
-- Manage Kubernetes resources through Moleculer actions
-
-## Configuration
-
-The service reads Kubernetes configurations from the `config` folder. Each configuration file should be named as `<cluster-name>.kubeconfig`.
-
-## Actions
-
-### loadKubeConfig
-
-Load a Kubernetes configuration.
-
-- **Params:**
-  - `name` (string): The name of the configuration.
-  - `kubeconfig` (string): The content of the kubeconfig file.
-
-### exec
-
-Execute a command in a Kubernetes pod.
-
-- **Params:**
-  - `cluster` (string, optional): The name of the cluster. Default is 'default'.
-  - `namespace` (string): The namespace of the pod.
-  - `name` (string): The name of the pod.
-  - `container` (string, optional): The name of the container. If not provided, the first container in the pod will be used.
-  - `command` (array of strings): The command to execute.
-
-### findOne
-
-Find one document in the database.
-
-- **Params:** Query parameters to filter the documents.
-
-### find
-
-Find documents in the database.
-
-- **Params:** Query parameters to filter the documents.
-
-## Methods
-
-### loadKubeConfig
-
-Load a Kubernetes configuration from a kubeconfig string.
-
-- **Params:**
-  - `name` (string): The name of the configuration.
-  - `kubeconfig` (string): The content of the kubeconfig file.
-
-### watchAPI
-
-Watch a Kubernetes API for changes.
-
-- **Params:**
-  - `config` (object): The Kubernetes configuration.
-  - `api` (string): The name of the API to watch.
-  - `events` (array of strings): The events to watch (default: ['ADDED', 'MODIFIED', 'DELETED']).
-
-### loadApi
-
-Load a Kubernetes API client.
-
-- **Params:**
-  - `api` (string): The name of the API.
-  - `kc` (object): The Kubernetes configuration.
-
-### watchResources
-
-Watch all resources for a given configuration.
-
-- **Params:**
-  - `config` (object): The Kubernetes configuration.
-
-### watchResource
-
-Watch a specific resource for changes.
-
-- **Params:**
-  - `api` (string): The name of the API.
-  - `client` (object): The Kubernetes API client.
-  - `watch` (object): The Kubernetes watch client.
-  - `config` (object): The Kubernetes configuration.
-
-### loadKubeConfigs
-
-Load all Kubernetes configurations from the config folder.
-
-### stopWatching
-
-Stop watching all resources.
-
-### stopWatchingCluster
-
-Stop watching resources for a specific cluster.
-
-- **Params:**
-  - `cluster` (string): The name of the cluster.
-
-### getClassMethods
-
-Get all methods of a class.
-
-- **Params:**
-  - `className` (object): The class to get methods from.
-
-### parseArgs
-
-Parse the arguments of a function.
-
-- **Params:**
-  - `func` (function): The function to parse.
-
-### flattenObject
-
-Flatten an object.
-
-- **Params:**
-  - `ob` (object): The object to flatten.
-
-### findOne
-
-Find one document in the database.
-
-- **Params:**
-  - `query` (object): The query to filter the documents.
-
-### find
-
-Find documents in the database.
-
-- **Params:**
-  - `query` (object): The query to filter the documents.
-
-## Lifecycle Events
-
-### created
-
-Service created lifecycle event handler.
-
-### started
-
-Service started lifecycle event handler.
-
-### stopped
-
-Service stopped lifecycle event handler.
-
-## Usage
-
-To use this service, include it in your Moleculer project and configure it according to your needs. You can then call the actions provided by the service to interact with your Kubernetes clusters.
-
-### Example
-
-```javascript
-const { ServiceBroker } = require("moleculer");
-const KubernetesService = require("./services/kubernetes.service");
-
-const broker = new ServiceBroker();
-
-broker.createService(KubernetesService);
-
-broker.start().then(() => {
-    // Load Kubernetes configuration
-    broker.call("kubernetes.loadKubeConfig", { name: "default", kubeconfig: "..." })
-        .then(() => {
-            console.log("Kubernetes configuration loaded");
-
-            // Execute a command in a pod
-            return broker.call("kubernetes.exec", {
-                cluster: "default",
-                namespace: "default",
-                name: "my-pod",
-                container: "my-container",
-                command: ["echo", "Hello, World!"]
-            });
-        })
-        .then(res => {
-            console.log("Command executed:", res);
-
-            // Find a document in the database
-            return broker.call("kubernetes.findOne", { query: { name: "my-pod" } });
-        })
-        .then(doc => {
-            console.log("Document found:", doc);
-
-            // Stop watching resources
-            return broker.call("kubernetes.stopWatching");
-        })
-        .then(() => {
-            console.log("Stopped watching resources");
-        })
-        .catch(err => {
-            console.error("Error:", err);
-        });
-});
-```
-
-### Configuration
-
-Ensure that your Kubernetes configurations are placed in the `config` folder with the naming convention `<cluster-name>.kubeconfig`. The service will automatically load these configurations on startup.
+The `routes` service is responsible for managing route configurations. It provides the following features:
+- CRUD operations for routes.
+- Lookup routes by `vHost`.
+- Supports various routing strategies like `RandomStrategy`, `IPHashStrategy`, `LatencyStrategy`, and `RoundRobinStrategy`.
 
 ### Actions
 
-You can call the actions provided by the service to interact with your Kubernetes clusters. Here are some examples:
+- `lookup`: Lookup a route by `vHost`.
+  - **Example**: 
+    ```js
+    const route = await broker.call("routes.lookup", { vHost: "example.com" });
+    ```
 
-#### Load Kubernetes Configuration
+### Fields
 
-```javascript
-broker.call("kubernetes.loadKubeConfig", { name: "default", kubeconfig: "..." });
-```
+- `vHost`: The virtual host name.
+  - **Example**: `"example.com"`
+- `zone`: The zone of the route.
+  - **Example**: `"us-east-1"`
+- `certs`: Indicates if certificates are required.
+  - **Example**: `true`
+- `auth`: Authentication method.
+  - **Example**: `"basic"`
+- `strategy`: Routing strategy.
+  - **Example**: `"RoundRobinStrategy"`
+- `id`: Primary key.
+  - **Example**: `1`
+- `createdAt`: Timestamp when the route was created.
+  - **Example**: `"2021-01-01T00:00:00Z"`
+- `updatedAt`: Timestamp when the route was last updated.
+  - **Example**: `"2021-01-02T00:00:00Z"`
+- `deletedAt`: Timestamp when the route was deleted.
+  - **Example**: `"2021-01-03T00:00:00Z"`
 
-#### Execute Command in Pod
+## Routes Hosts Service
 
-```javascript
-broker.call("kubernetes.exec", {
-    cluster: "default",
-    namespace: "default",
-    name: "my-pod",
-    container: "my-container",
-    command: ["echo", "Hello, World!"]
-});
-```
+The `routes.hosts` service manages the hosts associated with routes. It provides the following features:
+- CRUD operations for route hosts.
+- Lookup hosts by route.
+- Automatically removes hosts when a route is deleted.
 
-#### Find Document in Database
+### Actions
 
-```javascript
-broker.call("kubernetes.findOne", { query: { name: "my-pod" } });
-```
+- `lookup`: Lookup hosts by route.
+  - **Example**: 
+    ```js
+    const hosts = await broker.call("routes.hosts.lookup", { route: 1 });
+    ```
 
-#### Stop Watching Resources
+### Fields
 
-```javascript
-broker.call("kubernetes.stopWatching");
-```
+- `route`: The associated route ID.
+  - **Example**: `1`
+- `hostname`: The hostname of the host.
+  - **Example**: `"host1.example.com"`
+- `port`: The port number.
+  - **Example**: `80`
+- `weight`: The weight of the host.
+  - **Example**: `10`
+- `vnodes`: The number of virtual nodes.
+  - **Example**: `100`
+- `group`: The group of the host (e.g., `BLUE`, `GREEN`).
+  - **Example**: `"BLUE"`
+- `protocol`: The protocol used by the host (e.g., `http:`, `https:`).
+  - **Example**: `"http:"`
+- `cluster`: The cluster name.
+  - **Example**: `"cluster1"`
+- `id`: Primary key.
+  - **Example**: `1`
+- `createdAt`: Timestamp when the host was created.
+  - **Example**: `"2021-01-01T00:00:00Z"`
+- `updatedAt`: Timestamp when the host was last updated.
+  - **Example**: `"2021-01-02T00:00:00Z"`
+- `deletedAt`: Timestamp when the host was deleted.
+  - **Example**: `"2021-01-03T00:00:00Z"`
+
+## Routes Proxy Service
+
+The `routes.proxy` service is responsible for proxying HTTP and HTTPS requests to the appropriate backend hosts based on the configured routes. It provides the following features:
+- Create, add, and remove routes and hosts.
+- Mark hosts as dead.
+- Resolve routes.
+- Retrieve statistics and information about routes.
+- Sync routes with the database.
+- Enable or disable logging.
+
+### Actions
+
+- `createRoute`: Create a new route.
+  - **Example**: 
+    ```js
+    const route = await broker.call("routes.proxy.createRoute", { vHost: "example.com", zone: "us-east-1" });
+    ```
+- `addHost`: Add a host to a route.
+  - **Example**: 
+    ```js
+    const host = await broker.call("routes.proxy.addHost", { route: 1, hostname: "host1.example.com", port: 80 });
+    ```
+- `removeHost`: Remove a host from a route.
+  - **Example**: 
+    ```js
+    await broker.call("routes.proxy.removeHost", { route: 1, hostname: "host1.example.com" });
+    ```
+- `markHostDead`: Mark a host as dead.
+  - **Example**: 
+    ```js
+    await broker.call("routes.proxy.markHostDead", { route: 1, hostname: "host1.example.com" });
+    ```
+- `resolve`: Resolve a route by size.
+  - **Example**: 
+    ```js
+    const resolvedRoute = await broker.call("routes.proxy.resolve", { size: 100 });
+    ```
+- `stats`: Retrieve statistics for a route.
+  - **Example**: 
+    ```js
+    const stats = await broker.call("routes.proxy.stats", { route: 1 });
+    ```
+- `info`: Retrieve information about routes.
+  - **Example**: 
+    ```js
+    const info = await broker.call("routes.proxy.info", { route: 1 });
+    ```
+- `sync`: Sync routes with the database.
+  - **Example**: 
+    ```js
+    await broker.call("routes.proxy.sync");
+    ```
+- `syncRoute`: Sync a specific route.
+  - **Example**: 
+    ```js
+    await broker.call("routes.proxy.syncRoute", { route: 1 });
+    ```
+- `logging`: Enable or disable logging.
+  - **Example**: 
+    ```js
+    await broker.call("routes.proxy.logging", { enable: true });
+    ```
+
+### Fields
+
+- `clusterName`: The name of the cluster.
+  - **Example**: `"cluster1"`
+- `logger`: The logger instance.
+  - **Example**: `console`
+- `httpKeepAlive`: Whether to keep HTTP connections alive.
+  - **Example**: `true`
+- `maxSockets`: The maximum number of sockets.
+  - **Example**: `100`
+- `port`: The HTTP port.
+  - **Example**: `80`
+- `https`: The HTTPS configuration.
+  - **Example**: `{ key: "key.pem", cert: "cert.pem" }`
+- `tcpTimeout`: The TCP timeout.
+  - **Example**: `30000`
+- `retryOnError`: The number of retries on error.
+  - **Example**: `3`
+- `errorPage`: The error page content.
+  - **Example**: `"Error occurred"`
+
