@@ -4,6 +4,7 @@
   "description": "My Moleculer-based microservices project",
   "scripts": {
     "dev": "moleculer-runner --repl --hot services/**/*.service.js",
+    "agent": "moleculer-runner --repl --hot services/proxy.agent.js",
     "start": "moleculer-runner",
     "cli": "moleculer connect NATS",
     "ci": "jest --watch",
