@@ -2,6 +2,30 @@
 
 # Routes services
 
+Routes services are a collection of microservices that provide services for managing routes and hosts in a distributed environment. These services include:
+- [Routes Service](#routes-service)
+- [Hosts Service](#hosts-service)
+- [Proxy Service](#proxy-service)
+
+## Installation
+
+To run the services, install Docker and run the following command:
+```bash
+docker run -d --name routes --restart always -v /path/to/data:/app/db ghcr.io/flybyme/reverse-proxy-service:main
+```
+For Nats as the transporter
+
+```bash
+docker run -d --name routes --restart always -e TRANSPORTER=nats://10.1.10.1:4222 -v /path/to/data:/app/db ghcr.io/flybyme/reverse-proxy-service:main
+```
+
+Replace `/path/to/data` with the path to your data directory.
+
+If you want to run the agent as a Docker container, you can use the following command:
+```bash
+docker run -d --name routes --restart always -p 80:80 -p 443:443 -e TRANSPORTER=nats://10.1.10.1:4222 ghcr.io/flybyme/reverse-proxy-service:main npm run agent
+```
+
 ## Routes Service
 
 The `routes` service is responsible for managing route configurations. It provides the following features:
